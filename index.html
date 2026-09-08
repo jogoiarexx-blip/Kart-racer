@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>SUPER KART 16-BIT</title>
+<link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+<div id="wrap">
+  <canvas id="game" width="800" height="600"></canvas>
+  <div id="overlay"></div>
+
+  <div id="startScreen">
+    <div class="menuShell">
+      <section class="brandZone">
+        <div class="brandKicker">16-BIT RACING SYSTEM</div>
+        <div class="brandTitle">SUPER<br>KART<span>GRAND PRIX</span></div>
+        <div class="flagStripe"></div>
+        <div class="brandHint"><b>↑ ↓</b> navegar &nbsp; <b>ENTER</b> selecionar &nbsp; <b>ESC</b> voltar</div>
+      </section>
+      <section class="menuZone">
+        <div class="menuPanel">
+          <div class="menuHeader">MAIN MENU</div>
+          <div id="pageMain" class="menuPage active">
+            <div class="mainMenu">
+              <button class="menuBtn primary selected" id="btnStart" data-menu>▶ CORRIDA RÁPIDA</button>
+              <button class="menuBtn" id="btnTracks" data-menu>▰ SELECIONAR PISTA</button>
+              <button class="menuBtn" id="btnOptions" data-menu>⚙ OPÇÕES</button>
+              <button class="menuBtn" id="btnControls" data-menu>⌨ CONTROLES</button>
+              <button class="menuBtn" id="btnCredits" data-menu>★ CRÉDITOS</button>
+            </div>
+            <div class="menuFooter">MODE 7 ENGINE • 5 PISTAS • 3 ADVERSÁRIOS<br>DRIFT • TURBO • ITENS • TERRENOS</div>
+          </div>
+
+          <div id="pageTracks" class="menuPage">
+            <div class="pageTitle">SELECIONAR PISTA</div>
+            <div class="trackGrid">
+              <button class="trackBtn active" data-track="0">01 • GREEN VALLEY</button>
+              <button class="trackBtn" data-track="1">02 • COAST RUN</button>
+              <button class="trackBtn" data-track="2">03 • DESERT SNAKE</button>
+              <button class="trackBtn" data-track="3">04 • MOUNTAIN RING</button>
+              <button class="trackBtn" data-track="4">05 • NIGHT CIRCUIT</button>
+            </div>
+            <div class="trackInfo" id="trackInfo">GREEN VALLEY • Dificuldade: ★★☆☆☆ • pista equilibrada e larga.</div>
+            <button class="backBtn" data-back>← VOLTAR</button>
+          </div>
+
+          <div id="pageOptions" class="menuPage">
+            <div class="pageTitle">OPÇÕES</div>
+            <div class="optionRow"><span>VOLTAS</span><div class="choiceGroup"><button class="smallBtn active" data-laps="3">3</button><button class="smallBtn" data-laps="5">5</button></div></div>
+            <div class="optionRow"><span>CÂMERA</span><div class="choiceGroup"><button class="smallBtn active" data-camera="mode7">MODE 7</button><button class="smallBtn" data-camera="top">TOPO</button></div></div>
+            <div class="optionRow"><span>GRÁFICOS</span><div class="choiceGroup"><button class="smallBtn" data-gfx="low">BAIXO</button><button class="smallBtn active" data-gfx="medium">MÉDIO</button><button class="smallBtn" data-gfx="high">ALTO</button><button class="smallBtn" data-gfx="ultra">ULTRA</button></div></div>
+            <div class="optionRow"><span>CENÁRIO</span><div class="choiceGroup"><button class="smallBtn" data-density="low">BAIXA</button><button class="smallBtn active" data-density="medium">NORMAL</button><button class="smallBtn" data-density="high">ALTA</button></div></div>
+            <div class="optionRow"><span>FPS</span><div class="choiceGroup"><button class="smallBtn active" id="btnFpsOff">OFF</button><button class="smallBtn" id="btnFpsOn">ON</button></div></div>
+            <button class="backBtn" data-back>← VOLTAR</button>
+          </div>
+
+          <div id="pageControls" class="menuPage">
+            <div class="pageTitle">CONTROLES</div>
+            <div class="controlsList"><b>↑ / W</b> Acelerar<br><b>↓ / S</b> Frear / Ré<br><b>← → / A D</b> Direção<br><b>ESPAÇO</b> Drift / Turbo<br><b>E / X</b> Usar item<br><b>C</b> Trocar câmera<br><b>G</b> Qualidade gráfica<br><b>F</b> Mostrar FPS</div>
+            <button class="backBtn" data-back>← VOLTAR</button>
+          </div>
+
+          <div id="pageCredits" class="menuPage">
+            <div class="pageTitle">CRÉDITOS</div>
+            <div class="credits"><strong>SUPER KART 16-BIT</strong><br>Engine HTML5 Canvas<br>Render pseudo-3D Mode 7<br><br>Versão otimizada para desktop e notebooks.</div>
+            <button class="backBtn" data-back>← VOLTAR</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div id="endScreen">
+    <div class="title" id="endTitle">CHEGADA!</div>
+    <div class="subtitle" id="endPlace"></div>
+    <div class="endActions"><button class="endBtn" id="btnAgain">CORRER DE NOVO</button><button class="endBtn secondary" id="btnMenu">MENU PRINCIPAL</button></div>
+  </div>
+</div>
+
+<script src="js/core.js" defer></script>
+<script src="js/assets.js" defer></script>
+<script src="js/tracks.js" defer></script>
+<script src="js/racers.js" defer></script>
+<script src="js/camera.js" defer></script>
+<script src="js/graphics.js" defer></script>
+<script src="js/audio.js" defer></script>
+<script src="js/input.js" defer></script>
+<script src="js/menu.js" defer></script>
+<script src="js/state.js" defer></script>
+<script src="js/items.js" defer></script>
+<script src="js/physics.js" defer></script>
+<script src="js/render-top.js" defer></script>
+<script src="js/render-mode7.js" defer></script>
+<script src="js/render-poly.js" defer></script>
+<script src="js/hud.js" defer></script>
+<script src="js/game-loop.js" defer></script>
+</body>
+</html>
