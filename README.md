@@ -38,3 +38,30 @@ Migrar os dados das pistas para arquivos próprios e introduzir um AssetManager 
 - Míssil: procura um adversário à frente.
 - Choque: reduz temporariamente os demais karts.
 - A IA coleta e usa itens automaticamente.
+
+
+## Atualização de cenário e render
+- Objetos de pista validados pela distância global aos segmentos do circuito.
+- Guard-rails ancorados nas bordas da pista.
+- Adversários usam sprite real do kart em distância próxima/média e low-poly distante.
+- Objetos e adversários compartilham ordenação por profundidade.
+- Culling e LOD mantidos para desempenho.
+
+
+## Otimização de assets
+- Sprites principais e itens convertidos para **WEBP lossless**.
+- Background do menu principal também convertido para **WEBP**.
+
+
+## Sprites de cenário em WEBP
+- Adicionados sprites WEBP para árvores, pinheiros, palmeiras, cactos, arbustos, pedras, placas, luminária e guard-rails.
+- O render de cenário agora usa imagens WEBP aplicadas diretamente no jogo.
+- Duplicatas PNG e assets não usados foram removidos para deixar o projeto mais leve.
+
+
+## Otimizações extras aplicadas nesta versão
+- Redução agressiva da resolução fonte dos sprites WEBP usando reamostragem nearest-neighbor para manter o visual pixel-art.
+- Tamanho total dos assets reduzido de aproximadamente 7.0 MB para 2.8 MB.
+- Arredondamento de coordenadas de render para reduzir blur/subpixel e ajudar o canvas.
+- Criação centralizada de imagens com decoding assíncrono.
+- Mantidos fallbacks e compatibilidade do jogo.

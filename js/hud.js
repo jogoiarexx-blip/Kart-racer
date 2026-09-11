@@ -123,7 +123,6 @@ function renderScene(){
     drawWorldItemsMode7(camX,camY,camAngle);
     const cam={camX,camY,camAngle};
     drawHybridWorld(cam);
-    [ai1,ai2,ai3].sort((a,b)=>{const pa=projectLocal3D(a.x,a.y,0,cam),pb=projectLocal3D(b.x,b.y,0,cam);return (pb?.depth||0)-(pa?.depth||0)}).forEach(r=>drawLowPolyKart(r,cam,false));
     drawPlayerKartThirdPerson();
     spawnGfxParticles();
     drawGfxParticles();

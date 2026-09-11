@@ -2,26 +2,75 @@
 
 // ---------- ASSETS VISUAIS ----------
 // Um único modelo de kart por enquanto, com 10 frames em uma grade 5x2.
-const gameAssets = {
-  playerKart: new Image(),
-  items: {}
-};
+function createGameImage(src){
+  const img = new Image();
+  img.decoding = 'async';
+  img.src = src;
+  return img;
+}
 
-gameAssets.playerKart.src = 'assets/sprites/player-kart.png';
+const gameAssets = {
+  playerKart: createGameImage('assets/sprites/player-kart.webp'),
+  items: {},
+  scenery: {}
+};
 
 const ITEM_FILES = {
-  box: 'assets/sprites/items/item-box.png',
-  bomb: 'assets/sprites/items/bomb.png',
-  oil: 'assets/sprites/items/oil.png',
-  missile: 'assets/sprites/items/missile.png',
-  shield: 'assets/sprites/items/shield.png',
-  turbo: 'assets/sprites/items/turbo.png',
-  shock: 'assets/sprites/items/shock.png'
+  box: 'assets/sprites/items/item-box.webp',
+  bomb: 'assets/sprites/items/bomb.webp',
+  oil: 'assets/sprites/items/oil.webp',
+  missile: 'assets/sprites/items/missile.webp',
+  shield: 'assets/sprites/items/shield.webp',
+  turbo: 'assets/sprites/items/turbo.webp',
+  shock: 'assets/sprites/items/shock.webp'
 };
 for(const [key,src] of Object.entries(ITEM_FILES)){
-  const img = new Image();
-  img.src = src;
-  gameAssets.items[key] = img;
+  gameAssets.items[key] = createGameImage(src);
+}
+
+const SCENERY_FILES = {
+  tree:'assets/sprites/scenery/tree.webp',
+  pine:'assets/sprites/scenery/pine.webp',
+  palm:'assets/sprites/scenery/palm.webp',
+  cactus:'assets/sprites/scenery/cactus.webp',
+  bush:'assets/sprites/scenery/bush.webp',
+  rock:'assets/sprites/scenery/rock.webp',
+  boulder:'assets/sprites/scenery/boulder.webp',
+  flowers:'assets/sprites/scenery/flowers.webp',
+  signLeft:'assets/sprites/scenery/sign-left.webp',
+  signRight:'assets/sprites/scenery/sign-right.webp',
+  signChecker:'assets/sprites/scenery/sign-checker.webp',
+  lamp:'assets/sprites/scenery/lamp.webp',
+  guardrailStraight:'assets/sprites/scenery/guardrail-straight.webp',
+  guardrailLeft:'assets/sprites/scenery/guardrail-left.webp',
+  guardrailRight:'assets/sprites/scenery/guardrail-right.webp',
+  neonBarrier:'assets/sprites/scenery/neon-barrier.webp'
+};
+for(const [key,src] of Object.entries(SCENERY_FILES)){
+  gameAssets.scenery[key] = createGameImage(src);
+}
+
+function getScenerySprite(key){
+  const img = gameAssets.scenery[key];
+  return (img && img.complete && img.naturalWidth > 0) ? img : null;
+}
+
+function drawWorldSpriteImage(img, x, y, width, height, opts){
+  if(!img) return false;
+  opts = opts || {};
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  ctx.globalAlpha *= opts.alpha == null ? 1 : opts.alpha;
+  const rx = Math.round(x), ry = Math.round(y);
+  const rw = Math.max(1, Math.round(width)), rh = Math.max(1, Math.round(height));
+  ctx.translate(rx, ry);
+  if(opts.rotation) ctx.rotate(opts.rotation);
+  if(opts.flipX) ctx.scale(-1, 1);
+  const anchorX = opts.anchorX == null ? 0.5 : opts.anchorX;
+  const anchorY = opts.anchorY == null ? 1 : opts.anchorY;
+  ctx.drawImage(img, -rw * anchorX, -rh * anchorY, rw, rh);
+  ctx.restore();
+  return true;
 }
 
 const PLAYER_KART_SHEET = {
@@ -117,12 +166,12 @@ function drawItemSprite(type, x, y, size, opts){
   const scaleX = opts.scaleX == null ? 1 : opts.scaleX;
   const scaleY = opts.scaleY == null ? 1 : opts.scaleY;
   const offsetY = opts.offsetY || 0;
-  const dw = size;
-  const dh = size * (cell.sh / cell.sw);
+  const dw = Math.max(1, Math.round(size));
+  const dh = Math.max(1, Math.round(size * (cell.sh / cell.sw)));
   ctx.save();
   ctx.globalAlpha *= alpha;
   ctx.imageSmoothingEnabled = false;
-  ctx.translate(x, y + offsetY);
+  ctx.translate(Math.round(x), Math.round(y + offsetY));
   if(rotation) ctx.rotate(rotation);
   if(scaleX !== 1 || scaleY !== 1) ctx.scale(scaleX, scaleY);
   ctx.drawImage(cell.img, cell.sx, cell.sy, cell.sw, cell.sh, -dw/2, -dh/2, dw, dh);

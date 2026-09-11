@@ -32,33 +32,34 @@
   #startScreen {
     display:block;
     background:
-      linear-gradient(rgba(5,8,20,.18),rgba(5,8,20,.78)),
+      linear-gradient(rgba(6,10,22,.18),rgba(5,8,20,.72)),
       repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0,rgba(255,255,255,.018) 1px,transparent 1px,transparent 3px),
-      radial-gradient(circle at 70% 25%,rgba(63,169,245,.25),transparent 35%),
+      url('../assets/ui/menu-background.webp') center center / cover no-repeat,
       linear-gradient(160deg,#101936 0%,#121027 48%,#070812 100%);
   }
   #startScreen::before {
-    content:""; position:absolute; left:-10%; right:-10%; bottom:-48%; height:78%;
-    background:repeating-linear-gradient(90deg,#4f5160 0 34px,#454754 34px 68px);
-    transform:perspective(420px) rotateX(62deg);
-    transform-origin:50% 100%; opacity:.38; border-top:5px solid #f4e04d;
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:
+      radial-gradient(circle at 22% 28%, rgba(255,190,90,.16), transparent 18%),
+      radial-gradient(circle at 76% 18%, rgba(120,210,255,.14), transparent 22%),
+      linear-gradient(90deg, rgba(4,6,14,.58) 0%, rgba(4,7,16,.34) 38%, rgba(5,8,18,.18) 56%, rgba(5,8,18,.44) 100%);
   }
   #startScreen::after {
     content:""; position:absolute; inset:0; pointer-events:none;
-    box-shadow:inset 0 0 90px rgba(0,0,0,.8);
+    box-shadow:inset 0 0 120px rgba(0,0,0,.75);
   }
-  .menuShell { position:relative; z-index:2; width:100%; height:100%; display:flex; }
+  .menuShell { position:relative; z-index:2; width:100%; height:100%; display:flex; backdrop-filter: blur(1.5px); }
   .brandZone { width:56%; padding:68px 0 0 62px; position:relative; }
-  .brandKicker { color:#8ecfff; font-size:13px; letter-spacing:5px; margin-bottom:8px; text-shadow:2px 2px #000; }
-  .brandTitle { font-size:64px; line-height:.88; color:#ffde00; letter-spacing:2px; font-weight:900; -webkit-text-stroke:3px #9a2929; text-shadow:6px 6px 0 #111; }
+  .brandKicker { color:#d1f1ff; font-size:13px; letter-spacing:5px; margin-bottom:8px; text-shadow:2px 2px #000, 0 0 14px rgba(63,169,245,.35); }
+  .brandTitle { font-size:64px; line-height:.88; color:#ffde00; letter-spacing:2px; font-weight:900; -webkit-text-stroke:3px #9a2929; text-shadow:6px 6px 0 #111, 0 0 24px rgba(255,180,40,.18); }
   .brandTitle span { display:block; color:#fff; font-size:28px; letter-spacing:8px; -webkit-text-stroke:1px #27395c; margin-top:12px; }
-  .flagStripe { width:260px; height:10px; margin-top:22px; background:repeating-linear-gradient(90deg,#fff 0 20px,#d94848 20px 40px); box-shadow:0 4px 0 #111; }
-  .brandHint { position:absolute; left:62px; bottom:42px; font-size:11px; color:#aeb9cf; letter-spacing:1px; }
+  .flagStripe { width:260px; height:10px; margin-top:22px; background:repeating-linear-gradient(90deg,#fff 0 20px,#d94848 20px 40px); box-shadow:0 4px 0 #111, 0 0 20px rgba(255,255,255,.18); }
+  .brandHint { position:absolute; left:62px; bottom:42px; font-size:11px; color:#d6deef; letter-spacing:1px; padding:10px 12px; background:rgba(7,10,22,.38); border:1px solid rgba(255,255,255,.14); box-shadow:0 6px 18px rgba(0,0,0,.24); backdrop-filter: blur(2px); }
   .brandHint b { color:#ffde00; }
 
   .menuZone { width:44%; display:flex; align-items:center; justify-content:center; padding-right:46px; }
-  .menuPanel { width:300px; padding:18px; background:rgba(7,9,20,.88); border:3px solid #8ecfff; box-shadow:8px 8px 0 rgba(0,0,0,.65),inset 0 0 0 3px #202944; }
-  .menuHeader { font-size:12px; letter-spacing:3px; color:#8ecfff; margin:2px 0 15px; padding-bottom:10px; border-bottom:2px solid #2e3958; text-align:center; }
+  .menuPanel { width:320px; padding:18px; background:linear-gradient(180deg, rgba(10,14,30,.88) 0%, rgba(8,10,22,.92) 100%); border:3px solid #8ecfff; box-shadow:8px 8px 0 rgba(0,0,0,.65), 0 0 28px rgba(63,169,245,.18), inset 0 0 0 3px #202944; backdrop-filter: blur(5px); }
+  .menuHeader { font-size:12px; letter-spacing:3px; color:#bfefff; margin:2px 0 15px; padding-bottom:10px; border-bottom:2px solid #2e3958; text-align:center; text-shadow:0 0 12px rgba(63,169,245,.25); }
   .mainMenu { display:flex; flex-direction:column; gap:9px; }
   button { font-family:inherit; cursor:pointer; }
   .menuBtn {
@@ -70,14 +71,14 @@
   .menuBtn:hover,.menuBtn:focus,.menuBtn.selected { outline:none; color:#111; background:#ffde00; border-color:#fff; transform:translateX(-5px); box-shadow:5px 5px 0 #000; }
   .menuBtn:hover::before,.menuBtn:focus::before,.menuBtn.selected::before { background:#e63946; box-shadow:-4px 0 0 #fff; }
   .menuBtn.primary { border-color:#e63946; }
-  .menuFooter { margin-top:15px; text-align:center; color:#707c98; font-size:10px; line-height:1.5; }
+  .menuFooter { margin-top:15px; text-align:center; color:#a8b4d1; font-size:10px; line-height:1.5; text-shadow:1px 1px 0 #000; }
 
   .menuPage { display:none; }
   .menuPage.active { display:block; }
   .trackGrid { display:grid; grid-template-columns:1fr; gap:7px; margin-top:8px; }
   .trackBtn { width:100%; text-align:left; padding:9px 10px; font-family:inherit; font-size:11px; color:#cbd8f7; background:#171c31; border:2px solid #394462; cursor:pointer; box-shadow:none; letter-spacing:1px; }
   .trackBtn:hover,.trackBtn.active { background:#ffde00; color:#111; border-color:#fff; }
-  .trackInfo { margin:11px 0 4px; min-height:44px; padding:9px; border:2px solid #2e3958; background:#0b0e1b; color:#8ecfff; font-size:10px; line-height:1.5; }
+  .trackInfo { margin:11px 0 4px; min-height:44px; padding:9px; border:2px solid #2e3958; background:rgba(11,14,27,.86); color:#8ecfff; font-size:10px; line-height:1.5; }
   .pageTitle { color:#ffde00; font-size:18px; letter-spacing:2px; margin-bottom:14px; text-align:center; }
   .optionRow { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 0; border-bottom:1px solid #29314c; font-size:12px; color:#cfd8ec; }
   .choiceGroup { display:flex; gap:5px; }

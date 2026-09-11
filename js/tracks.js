@@ -19,7 +19,6 @@ const TRACKS = [
   ]}
 ];
 
-// Temas e comportamento exclusivos por circuito
 Object.assign(TRACKS[0], {skyTop:'#5fb8ff',skyBottom:'#c9ecff',horizon:'#3f7f5c',sun:'#fff2a8',objectType:'tree', surface:'asphalt'});
 Object.assign(TRACKS[1], {skyTop:'#48bfe3',skyBottom:'#caf0f8',horizon:'#0077b6',sun:'#ffe29a',objectType:'palm', surface:'asphalt'});
 Object.assign(TRACKS[2], {skyTop:'#f4a261',skyBottom:'#ffd6a5',horizon:'#c97a40',sun:'#fff0b3',objectType:'cactus', surface:'sandEdge'});
@@ -36,7 +35,10 @@ function centripetalPoint(p0,p1,p2,p3,t,alpha){
 }
 function buildPath(points,segPerSpan){
   const out=[],n=points.length;
-  for(let i=0;i<n;i++){ const p0=points[(i-1+n)%n],p1=points[i],p2=points[(i+1)%n],p3=points[(i+2)%n]; for(let j=0;j<segPerSpan;j++) out.push(centripetalPoint(p0,p1,p2,p3,j/segPerSpan,.5)); }
+  for(let i=0;i<n;i++){
+    const p0=points[(i-1+n)%n],p1=points[i],p2=points[(i+1)%n],p3=points[(i+2)%n];
+    for(let j=0;j<segPerSpan;j++) out.push(centripetalPoint(p0,p1,p2,p3,j/segPerSpan,.5));
+  }
   return out;
 }
 
@@ -50,6 +52,7 @@ let normals=[];
 let boostPads=[];
 let boostZones=[];
 let trackObjects=[];
+let trackBarriers=[];
 let itemBoxes=[];
 
 function getStartFrame(){
@@ -62,35 +65,11 @@ function getStartFrame(){
   return {p:p0,fwd,n:{x:-fwd.y,y:fwd.x},angle:Math.atan2(fwd.y,fwd.x)};
 }
 
-function rebuildTrack(index){
-  currentTrackIndex=index; currentTrack=TRACKS[index];
-  path=buildPath(currentTrack.points,16); NP=path.length; ROAD_HW=currentTrack.road; HARD_WALL=ROAD_HW+55;
-  normals=path.map((p,i)=>{ const q=path[(i+1)%NP],dx=q.x-p.x,dy=q.y-p.y,len=Math.hypot(dx,dy)||1; return {x:-dy/len,y:dx/len}; });
-  boostPads=currentTrack.boosts.map(i=>i%NP);
-  boostZones=boostPads.map(i=>({x:path[i].x,y:path[i].y,r:34,cooldown:0}));
-  trackObjects=[];
-  const objStep=Math.max(8,Math.floor(NP/18));
-  for(let i=0;i<NP;i+=objStep){
-    const p=path[i],n=normals[i];
-    for(const side of [-1,1]){
-      const dist=ROAD_HW+70+((i*17)%55);
-      let objType=currentTrack.objectType;
-      if(currentTrackIndex===2 && i%(objStep*3)===0) objType='rock';
-      if(currentTrackIndex===3 && i%(objStep*4)===0) objType='rock';
-      if(currentTrackIndex===4 && i%(objStep*3)===0) objType='building';
-      trackObjects.push({type:objType,x:p.x+n.x*dist*side,y:p.y+n.y*dist*side,scale:0.9+((i%5)*0.08),w:32+(i%4)*7,h:55+(i%5)*12});
-    }
-  }
-  itemBoxes=[];
-  for(let k=0;k<5;k++){
-    const i=Math.floor((k+0.5)*NP/5)%NP,p=path[i],n=normals[i];
-    itemBoxes.push({x:p.x+n.x*((k%2?1:-1)*ROAD_HW*0.28),y:p.y+n.y*((k%2?1:-1)*ROAD_HW*0.28),active:true,respawn:0});
-  }
-  mmBounds=null;
-  buildWorldTexture();
+function signedDistFromCenter(x, y, i){
+  const p = path[i], n = normals[i];
+  return (x - p.x) * n.x + (y - p.y) * n.y;
 }
 
-// Busca local progressiva — evita varrer ~176 waypoints quase sempre.
 function nearestWaypoint(x, y, hintIndex, searchRadius){
   let bestI = 0, bestD = Infinity;
   const hint = hintIndex != null ? hintIndex : 0;
@@ -123,16 +102,125 @@ function nearestWaypoint(x, y, hintIndex, searchRadius){
   return { i: bestI, d2: bestD };
 }
 
-function signedDistFromCenter(x, y, i){
-  const p = path[i], n = normals[i];
-  return (x - p.x) * n.x + (y - p.y) * n.y;
+function objectClearanceForType(type){
+  if(type==='building' || type==='neon' || type==='lamp') return ROAD_HW + 110;
+  if(type==='rock') return ROAD_HW + 78;
+  if(type==='sign' || type==='bush') return ROAD_HW + 58;
+  return ROAD_HW + 86;
+}
+function objectScaleForType(type, seed){
+  if(type==='building') return 1.05 + seed * 0.45;
+  if(type==='neon') return 1.0 + seed * 0.38;
+  if(type==='tree' || type==='pine' || type==='palm') return 0.92 + seed * 0.42;
+  if(type==='cactus') return 0.86 + seed * 0.36;
+  if(type==='rock' || type==='bush') return 0.82 + seed * 0.28;
+  return 0.88 + seed * 0.24;
+}
+function pointSegmentDistanceSq(px,py,ax,ay,bx,by){
+  const abx=bx-ax, aby=by-ay;
+  const len2=abx*abx+aby*aby || 1;
+  const t=Math.max(0,Math.min(1,((px-ax)*abx+(py-ay)*aby)/len2));
+  const qx=ax+abx*t, qy=ay+aby*t;
+  const dx=px-qx, dy=py-qy;
+  return dx*dx+dy*dy;
+}
+function minDistanceToTrackSq(x,y){
+  let best=Infinity;
+  for(let i=0;i<NP;i++){
+    const a=path[i], b=path[(i+1)%NP];
+    const d2=pointSegmentDistanceSq(x,y,a.x,a.y,b.x,b.y);
+    if(d2<best) best=d2;
+  }
+  return best;
+}
+function isObjectTooCloseToTrack(x, y, margin){
+  return minDistanceToTrackSq(x,y) < margin*margin;
+}
+function canPlaceTrackObject(x,y,minGap){
+  for(const o of trackObjects){
+    const dx=o.x-x, dy=o.y-y;
+    if(dx*dx+dy*dy < minGap*minGap) return false;
+  }
+  return true;
+}
+function pickTracksideTypes(trackIndex, i, side){
+  switch(trackIndex){
+    case 0: return i % 7 === 0 ? ['tree','bush'] : (i % 11 === 0 ? ['sign'] : ['tree']);
+    case 1: return i % 6 === 0 ? ['palm','rock'] : (i % 10 === 0 ? ['sign'] : ['palm']);
+    case 2: return i % 5 === 0 ? ['cactus','rock'] : (i % 9 === 0 ? ['sign'] : ['cactus']);
+    case 3: return i % 6 === 0 ? ['pine','rock'] : (i % 10 === 0 ? ['sign'] : ['pine']);
+    case 4: return i % 4 === 0 ? ['building','neon'] : (i % 8 === 0 ? ['lamp'] : ['neon']);
+  }
+  return [currentTrack.objectType];
+}
+function tryPlaceTrackObject(type, baseIndex, side, baseDist){
+  for(let attempt=0; attempt<5; attempt++){
+    const idx = (baseIndex + attempt * 2) % NP;
+    const p = path[idx], n = normals[idx];
+    const outward = baseDist + attempt * 18 + ((idx * 13) % 18);
+    const jitter = (attempt - 2) * 10;
+    const x = p.x + n.x * outward * side + (-n.y) * jitter;
+    const y = p.y + n.y * outward * side + ( n.x) * jitter;
+    const clearance = objectClearanceForType(type);
+    if(isObjectTooCloseToTrack(x, y, clearance)) continue;
+    if(!canPlaceTrackObject(x, y, type==='building' ? 90 : 54)) continue;
+    const seed = ((idx * 37 + side * 17 + attempt * 11) % 100) / 100;
+    const sc = objectScaleForType(type, seed);
+    const obj = {type,x,y,scale:sc,w:34+(idx%5)*7,h:56+(idx%6)*12};
+    if(type==='sign') { obj.w = 22; obj.h = 32; }
+    if(type==='lamp') { obj.w = 16; obj.h = 62; }
+    if(type==='bush') { obj.w = 28; obj.h = 22; }
+    if(type==='rock') { obj.w = 28; obj.h = 26; }
+    trackObjects.push(obj);
+    return true;
+  }
+  return false;
 }
 
+function rebuildTrack(index){
+  currentTrackIndex=index; currentTrack=TRACKS[index];
+  path=buildPath(currentTrack.points,16); NP=path.length; ROAD_HW=currentTrack.road; HARD_WALL=ROAD_HW+55;
+  normals=path.map((p,i)=>{ const q=path[(i+1)%NP],dx=q.x-p.x,dy=q.y-p.y,len=Math.hypot(dx,dy)||1; return {x:-dy/len,y:dx/len}; });
+  boostPads=currentTrack.boosts.map(i=>i%NP);
+  boostZones=boostPads.map(i=>({x:path[i].x,y:path[i].y,r:34,cooldown:0}));
+
+  trackObjects=[];
+  trackBarriers=[];
+  // Barreiras/guard-rails ancorados nas bordas da pista.
+  const barrierStep = 4;
+  for(let i=0;i<NP;i+=barrierStep){
+    const p=path[i], n=normals[i];
+    for(const side of [-1,1]){
+      const edge=ROAD_HW+12;
+      trackBarriers.push({
+        index:i, side,
+        x:p.x+n.x*edge*side,
+        y:p.y+n.y*edge*side,
+        style:(Math.floor(i/barrierStep)+(side>0?1:0))%2
+      });
+    }
+  }
+  const objStep = Math.max(6, Math.floor(NP/20));
+  for(let i=0;i<NP;i+=objStep){
+    for(const side of [-1,1]){
+      const baseDist = ROAD_HW + 86 + ((i*19 + (side>0?7:0)) % 44);
+      const types = pickTracksideTypes(currentTrackIndex, i, side);
+      types.forEach((type, idx) => {
+        tryPlaceTrackObject(type, (i + idx * 2) % NP, side, baseDist + idx * 26);
+      });
+    }
+  }
+
+  itemBoxes=[];
+  for(let k=0;k<5;k++){
+    const i=Math.floor((k+0.5)*NP/5)%NP,p=path[i],n=normals[i];
+    itemBoxes.push({x:p.x+n.x*((k%2?1:-1)*ROAD_HW*0.28),y:p.y+n.y*((k%2?1:-1)*ROAD_HW*0.28),active:true,respawn:0});
+  }
+  mmBounds=null;
+  buildWorldTexture();
+}
 
 // ---------- TEXTURA DO MUNDO (usada pela câmera Mode 7) ----------
-// Desenhamos a pista inteira uma única vez num canvas "de cima", em coordenadas
-// absolutas do mundo. Essa textura é depois amostrada pixel a pixel pela câmera
-// pseudo-3D, projetando o chão em perspectiva (a mesma ideia do Mode 7 do SNES).
 let TEX_OX=0, TEX_OY=0, TEX_W=0, TEX_H=0, TEX_DATA=null;
 
 function buildWorldTexture(){
@@ -193,7 +281,6 @@ function buildWorldTexture(){
   }
   tctx.closePath(); tctx.stroke(); tctx.setLineDash([]);
 
-  // linha quadriculada de largada — usa exatamente o mesmo eixo do grid de spawn.
   const startFrame=getStartFrame(), p0=startFrame.p, n0=startFrame.n, sq=14;
   for(let s=-ROAD_HW; s<ROAD_HW; s+=sq){
     const cx = p0.x+n0.x*(s+sq/2)-TEX_OX, cy = p0.y+n0.y*(s+sq/2)-TEX_OY;
@@ -218,16 +305,3 @@ function buildWorldTexture(){
 }
 let mmBounds = null;
 rebuildTrack(0);
-
-const sampleTmp = [0,0,0];
-function sampleWorld(wx,wy,out){
-  const px = (wx-TEX_OX)|0, py = (wy-TEX_OY)|0;
-  if(px>=0 && px<TEX_W && py>=0 && py<TEX_H){
-    const idx = (py*TEX_W+px)*4;
-    out[0]=TEX_DATA[idx]; out[1]=TEX_DATA[idx+1]; out[2]=TEX_DATA[idx+2];
-  } else {
-    const tile=40;
-    const even = ((Math.floor(wx/tile)+Math.floor(wy/tile))%2+2)%2===0;
-    if(even){ out[0]=0x2f;out[1]=0x9e;out[2]=0x44; } else { out[0]=0x26;out[1]=0x8a;out[2]=0x3a; }
-  }
-}

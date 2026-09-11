@@ -1,13 +1,8 @@
-SUPER KART - ASSETS
+Estrutura de assets
 
-Coloque os arquivos do jogo nestas pastas:
+- assets/ui/menu-background.webp = background principal do menu.
+- assets/sprites/player-kart.webp = sprite sheet do kart do jogador/adversários.
+- assets/sprites/items/*.webp = tiras WEBP dos itens usados em jogo.
+- assets/sprites/scenery/*.webp = sprites WEBP de cenário e pista (árvores, placas, guard-rails etc).
 
-sprites/  - karts, pilotos, objetos e efeitos 2D
-textures/ - texturas de pista, céu, terreno e materiais
-audio/    - músicas, motores, derrapagens, colisões e UI
-models/   - modelos low-poly futuros (JSON/OBJ/GLTF se adotado)
-ui/       - logos, ícones, HUD e elementos de menu
-tracks/   - dados/recursos específicos de cada circuito
-
-A engine atual ainda gera parte do visual proceduralmente em Canvas.
-Esta estrutura permite substituir gradualmente formas procedurais por assets reais.
+Projeto otimizado: duplicatas PNG e folhas antigas não utilizadas foram removidas.
